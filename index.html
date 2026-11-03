@@ -3,54 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5e1530">
 <title>Cave de Piré – Stock</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
-:root{--bg:#faf7f5;--card:#fff;--tx:#2a1f22;--mut:#7a6a6e;--ac:#7b1e3a;--acx:#fff;--bd:#e7dfdc;--warn:#b45309;--warnbg:#fef3c7;--bad:#b91c1c;--badbg:#fee2e2;--ok:#166534;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1416;--card:#261d20;--tx:#f3eaec;--mut:#a89599;--ac:#d4607f;--acx:#1a1416;--bd:#3a2d31;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac}}
-:root[data-theme="dark"]{--bg:#1a1416;--card:#261d20;--tx:#f3eaec;--mut:#a89599;--ac:#d4607f;--acx:#1a1416;--bd:#3a2d31;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:640px;margin:0 auto;padding:12px 14px 90px}
-h1{font-size:18px;margin:6px 0 10px}
-.alert{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px;margin-bottom:10px;cursor:pointer}
+/* Couleurs : à remplacer par celles de la cave (--ac = couleur principale, --hd = bandeau du haut, --gold = détails) */
+:root{--bg:#f7f2ec;--card:#fff;--tx:#2b1d21;--mut:#7d6b70;--ac:#7b1e3a;--acx:#fff;--hd:#5e1530;--gold:#c9a45c;--bd:#e6dcd4;--chip:#f3ebe3;--warn:#9a4a05;--warnbg:#fdecc8;--bad:#b91c1c;--badbg:#fde2e2;--ok:#166534;--sh:0 2px 12px rgba(60,20,30,.09)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1315;--card:#281d20;--tx:#f5ecee;--mut:#b3a0a4;--ac:#e0708f;--acx:#1b1315;--hd:#3a0f1e;--gold:#d9b873;--bd:#3c2d31;--chip:#33262a;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#1b1315;--card:#281d20;--tx:#f5ecee;--mut:#b3a0a4;--ac:#e0708f;--acx:#1b1315;--hd:#3a0f1e;--gold:#d9b873;--bd:#3c2d31;--chip:#33262a;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.35)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:18px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.hdr{background:var(--hd);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 14px;border-bottom:3px solid var(--gold)}
+.hdr .in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.logo{height:52px;width:auto;max-width:130px;object-fit:contain;border-radius:8px}
+.ttl{flex:1;min-width:0;line-height:1.15}
+.ttl b{display:block;font:700 24px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.3px}
+.ttl span{font-size:14px;opacity:.8}
+.hl{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px}
+main{max-width:720px;margin:0 auto;padding:18px 16px 120px}
+.alert{background:var(--warnbg);color:var(--warn);border-radius:14px;padding:12px 14px;font-size:16px;font-weight:600;margin-bottom:16px;cursor:pointer}
 .alert.bad{background:var(--badbg);color:var(--bad)}
-.alert ul{margin:6px 0 0;padding-left:18px}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav button{flex:1;border:0;background:none;color:var(--mut);padding:14px 0;font-size:15px;font-weight:600}
+.alert ul{margin:8px 0 0;padding-left:20px;font-weight:500}
+.alert li{margin:4px 0}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);box-shadow:0 -2px 12px rgba(60,20,30,.08);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:10px 0 12px;font:inherit;font-size:15px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button i{font-style:normal;font-size:26px;line-height:1}
 nav button.on{color:var(--ac)}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
-input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
-label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
-.row{display:flex;gap:8px;align-items:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+h2{font:700 21px/1.2 Georgia,"Times New Roman",serif;margin:0 0 12px}
+input,select{width:100%;min-height:52px;padding:12px 14px;border:1.5px solid var(--bd);border-radius:14px;background:var(--bg);color:var(--tx);font:inherit;font-size:17px}
+input:focus,select:focus{outline:none;border-color:var(--ac)}
+label{display:block;font-size:15px;font-weight:600;color:var(--mut);margin:12px 0 5px}
+.row{display:flex;gap:10px;align-items:center}
 .row>*{flex:1}
-button.p{background:var(--ac);color:var(--acx);border:0;border-radius:10px;padding:12px;font:inherit;font-weight:700;width:100%}
-button.s{background:none;border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:8px 12px;font:inherit}
-button.q{width:34px;flex:none;padding:6px}
-#reader{width:100%;border-radius:10px;overflow:hidden;margin-bottom:8px}
-.seg{display:flex;gap:6px;margin-bottom:8px}
-.seg button{flex:1;padding:9px 4px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;font:inherit;font-size:14px}
+button.p{background:var(--ac);color:var(--acx);border:0;border-radius:14px;min-height:56px;padding:14px;font:inherit;font-size:18px;font-weight:700;width:100%;box-shadow:var(--sh)}
+button.p:active{transform:scale(.99)}
+button.s{background:var(--card);border:1.5px solid var(--bd);color:var(--tx);border-radius:14px;min-height:50px;padding:10px 14px;font:inherit;font-size:17px}
+button.q{width:50px;flex:none;padding:6px;font-size:24px;font-weight:700;line-height:1}
+#reader{width:100%;border-radius:14px;overflow:hidden;margin-bottom:12px}
+.seg{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.seg button{flex:1;min-width:0;min-height:50px;padding:10px 6px;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);border-radius:14px;font:inherit;font-size:16px;font-weight:600}
 .seg button.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
-.loc{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.loc span{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:3px 8px;font-size:13px}
-.tag{font-size:12px;border-radius:6px;padding:2px 6px;margin-left:6px}
+.loc{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.loc span{background:var(--chip);border-radius:10px;padding:5px 11px;font-size:15px}
+.tag{font-size:13px;font-weight:700;border-radius:8px;padding:3px 9px;margin-left:8px;vertical-align:middle}
 .tag.w{background:var(--warnbg);color:var(--warn)}.tag.b{background:var(--badbg);color:var(--bad)}
-.mut{color:var(--mut);font-size:13px}
+.mut{color:var(--mut);font-size:15px}
+.name{font-size:19px;font-weight:700}
+.res{width:100%;text-align:left;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.res b{font-weight:600}
+.item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.item:last-child{border-bottom:0}
+.item .nm{flex:1;font-weight:600}
+.item .n{width:34px;text-align:center;font-size:22px;font-weight:800;color:var(--ac)}
 .hide{display:none!important}
-.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}.login .card{width:100%;max-width:340px}
-#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.login .brand{text-align:center;margin-bottom:22px}
+.login .logo{height:96px;max-width:240px;margin-bottom:8px}
+.login .brand b{display:block;font:700 32px/1.1 Georgia,"Times New Roman",serif;color:var(--ac)}
+.login .brand span{color:var(--mut);font-size:16px}
+.login .card{width:100%;max-width:380px}
+#lg_err{color:var(--bad);font-weight:600;min-height:22px;margin:10px 0 0}
+#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:12px 20px;border-radius:24px;font-size:16px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #msg.on{opacity:1}
 </style>
 </head>
 <body>
-<div id="login" class="login hide"><div class="card"><h1>🍷 Cave de Piré</h1>
-<label style="margin-top:0">E-mail</label><input id="lg_mail" type="email" autocomplete="username">
-<label>Mot de passe</label><input id="lg_pw" type="password" autocomplete="current-password">
-<button class="p" id="lg_btn" style="margin-top:14px">Se connecter</button><p id="lg_err" class="mut"></p></div></div>
+<div id="login" class="login hide">
+  <div class="brand"><img class="logo" src="logo.png" alt="" onerror="this.remove()"><b>Cave de Piré</b><span>Gestion du stock</span></div>
+  <div class="card">
+    <label style="margin-top:0">E-mail</label><input id="lg_mail" type="email" autocomplete="username" autocapitalize="none">
+    <label>Mot de passe</label><input id="lg_pw" type="password" autocomplete="current-password">
+    <button class="p" id="lg_btn" style="margin-top:18px">Se connecter</button>
+    <p id="lg_err"></p>
+  </div>
+</div>
+
+<header class="hdr"><div class="in">
+  <img class="logo" src="logo.png" alt="" onerror="this.remove()">
+  <div class="ttl"><b>Cave de Piré</b><span>Gestion du stock</span></div>
+  <button class="hl" id="logout">Déconnexion</button>
+</div></header>
+
 <main>
-<div class="row" style="margin-bottom:6px"><h1 style="flex:3;margin:0">🍷 Cave de Piré</h1><button class="s" id="logout" style="flex:none;font-size:13px">Déconnexion</button></div>
 <div id="alert"></div>
 <div id="off" class="card hide">Connexion à la base impossible. Vérifie internet puis recharge la page.</div>
 
@@ -60,17 +96,17 @@ button.q{width:34px;flex:none;padding:6px}
     <button data-m="reception">Réception</button>
     <button data-m="transfert">Transfert</button>
   </div>
-  <div class="row" style="margin-bottom:8px">
+  <div class="row" style="margin-bottom:14px">
     <div><label id="lblA" style="margin-top:0">Retirer de</label><select id="selA"></select></div>
     <div id="boxB" class="hide"><label style="margin-top:0">Vers</label><select id="selB"></select></div>
   </div>
   <div id="reader" class="hide"></div>
   <button class="p" id="camBtn">📷 Activer le scan</button>
-  <button class="s" id="photoBtn" style="width:100%;margin-top:8px">Scanner via l’appareil photo du téléphone</button>
+  <button class="s" id="photoBtn" style="width:100%;margin-top:10px">Scanner avec l’appareil photo</button>
   <input type="file" id="photoIn" accept="image/*" capture="environment" class="hide"><div id="hid" class="hide"></div>
-  <div class="card" style="margin-top:10px">
-    <label style="margin-top:0">Pas de code ? Chercher à la main</label>
-    <input id="manual" placeholder="Nom du vin…" autocomplete="off">
+  <div class="card" style="margin-top:16px">
+    <h2>Pas de code-barres ?</h2>
+    <input id="manual" placeholder="Tape le nom du vin (ex. Cl…)" autocomplete="off" autocapitalize="none">
     <div id="manRes"></div>
   </div>
   <div id="pending"></div>
@@ -79,17 +115,17 @@ button.q{width:34px;flex:none;padding:6px}
 
 <section id="v-stock" class="hide">
   <div class="seg" id="chips"></div>
-  <input id="q" placeholder="Rechercher un vin (il en reste ? où ?)" autocomplete="off">
-  <div id="addEx" class="card hide" style="margin-top:10px"><label id="exLbl" style="margin-top:0"></label><input id="ex" placeholder="Nom d’un produit déjà créé…" autocomplete="off"><div id="exRes"></div></div>
-  <button class="s" id="addBtn" style="margin:10px 0;width:100%">+ Nouveau produit</button>
+  <input id="q" placeholder="🔍 Rechercher un vin (il en reste ? où ?)" autocomplete="off" autocapitalize="none">
+  <div id="addEx" class="card hide" style="margin-top:14px"><label id="exLbl" style="margin-top:0"></label><input id="ex" placeholder="Nom d’un produit déjà créé…" autocomplete="off" autocapitalize="none"><div id="exRes"></div></div>
+  <button class="s" id="addBtn" style="margin:14px 0;width:100%;font-weight:700">+ Nouveau produit</button>
   <div id="form" class="card hide"></div>
   <div id="list"></div>
 </section>
 </main>
 
 <nav>
-  <button id="t-vente" class="on">Vente</button>
-  <button id="t-stock">Stock</button>
+  <button id="t-vente" class="on"><i>🛒</i>Vente</button>
+  <button id="t-stock"><i>📦</i>Stock</button>
 </nav>
 <div id="msg"></div>
 
@@ -100,12 +136,26 @@ let col=null,products={},pending=[],mode="vente",scanner=null,lastCode="",lastT=
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const tot=p=>LOCS.reduce((n,[k])=>n+(+p.stock?.[k]||0),0);
-function toast(t){const m=$("msg");m.textContent=t;m.classList.add("on");setTimeout(()=>m.classList.remove("on"),1800)}
+function toast(t){const m=$("msg");m.textContent=t;m.classList.add("on");setTimeout(()=>m.classList.remove("on"),2000)}
 function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},120)}catch(e){}}
+
+/* Recherche : ignore majuscules et accents, classe d'abord les noms qui commencent par ce que tu tapes */
+const nrm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+function findP(v,limit){
+  const q=nrm(v).trim();if(!q)return[];
+  const score=p=>{const n=nrm(p.name);
+    if(n.startsWith(q))return 0;
+    if(n.split(/[\s\-'’]+/).some(w=>w.startsWith(q)))return 1;
+    if(n.includes(q))return 2;
+    if((p.ean||"").includes(q))return 3;
+    return 9};
+  return Object.values(products).map(p=>[score(p),p]).filter(x=>x[0]<9)
+    .sort((a,b)=>a[0]-b[0]||a[1].name.localeCompare(b[1].name)).slice(0,limit).map(x=>x[1]);
+}
 
 /* Navigation */
 function tab(t){$("v-vente").classList.toggle("hide",t!=="vente");$("v-stock").classList.toggle("hide",t!=="stock");
-$("t-vente").classList.toggle("on",t==="vente");$("t-stock").classList.toggle("on",t==="stock");if(t!=="vente")stopCam()}
+$("t-vente").classList.toggle("on",t==="vente");$("t-stock").classList.toggle("on",t==="stock");if(t!=="vente")stopCam();window.scrollTo(0,0)}
 $("t-vente").onclick=()=>tab("vente");$("t-stock").onclick=()=>tab("stock");
 
 /* Sélecteurs d'emplacement */
@@ -124,7 +174,7 @@ function renderAlert(){
   if(!low.length){$("alert").innerHTML="";return}
   low.sort((a,b)=>tot(a)-tot(b));
   const bad=low.some(p=>tot(p)===0);
-  $("alert").innerHTML=`<div class="alert ${bad?"bad":""}" onclick="this.querySelector('ul').classList.toggle('hide')">⚠ ${low.length} produit${low.length>1?"s":""} bientôt en rupture <span class="mut">(toucher pour voir)</span><ul class="hide">${low.map(p=>`<li>${esc(p.name)} : ${tot(p)} restante${tot(p)>1?"s":""}${p.ordered?` · commandé (${esc(p.ordered)})`:""}</li>`).join("")}</ul></div>`;
+  $("alert").innerHTML=`<div class="alert ${bad?"bad":""}" onclick="this.querySelector('ul').classList.toggle('hide')">⚠ ${low.length} produit${low.length>1?"s":""} bientôt en rupture <span style="font-weight:500">(toucher pour voir)</span><ul class="hide">${low.map(p=>`<li>${esc(p.name)} : ${tot(p)} restante${tot(p)>1?"s":""}${p.ordered?` · commandé (${esc(p.ordered)})`:""}</li>`).join("")}</ul></div>`;
 }
 
 /* Scan */
@@ -133,8 +183,8 @@ async function startCam(){
   $("reader").classList.remove("hide");$("camBtn").textContent="⏹ Arrêter le scan";
   try{
     scanner=new Html5Qrcode("reader");
-    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:110}},onCode,()=>{});
-  }catch(e){toast("Caméra bloquée ici : utilise le scan via l’appareil photo");stopCam()}
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:120}},onCode,()=>{});
+  }catch(e){toast("Caméra bloquée : utilise « Scanner avec l’appareil photo »");stopCam()}
 }
 $("photoBtn").onclick=()=>$("photoIn").click();
 $("photoIn").onchange=async e=>{
@@ -148,19 +198,18 @@ async function stopCam(){
 $("camBtn").onclick=()=>scanner?stopCam():startCam();
 function onCode(code){
   const now=Date.now();if(code===lastCode&&now-lastT<1500)return;lastCode=code;lastT=now;
-  const p=Object.values(products).find(x=>x.ean===code);
+  const p=Object.values(products).find(x=>String(x.ean||"").trim()===String(code).trim());
   if(p){addPending(p.id);beep()}
   else{beep();toast("Code inconnu : "+code);stopCam();tab("stock");openForm({ean:code})}
 }
 function addPending(id){const it=pending.find(x=>x.id===id);it?it.qty++:pending.push({id,qty:1});renderPending()}
 function renderPending(){
-  $("pending").innerHTML=pending.length?`<div class="card">${pending.map((it,i)=>`<div class="row" style="margin:4px 0"><div style="flex:3">${esc(products[it.id]?.name)}${$("selA").value==="reserve"&&mode!=="vente"?` <span class="mut">· carton de ${+products[it.id]?.perCarton||6}</span>`:""}</div>
-  <button class="s q" onclick="chg(${i},-1)">−</button><b style="flex:none;width:24px;text-align:center">${it.qty}</b><button class="s q" onclick="chg(${i},1)">+</button></div>`).join("")}</div>`:`<p class="mut">Aucun article scanné.</p>`;
+  $("pending").innerHTML=pending.length?`<div class="card">${pending.map((it,i)=>`<div class="item"><div class="nm">${esc(products[it.id]?.name)}${$("selA").value==="reserve"&&mode!=="vente"?` <span class="mut">· carton de ${+products[it.id]?.perCarton||6}</span>`:""}</div>
+  <button class="s q" onclick="chg(${i},-1)">−</button><span class="n">${it.qty}</span><button class="s q" onclick="chg(${i},1)">+</button></div>`).join("")}</div>`:`<p class="mut" style="text-align:center;margin:16px 0">Rien de scanné pour l’instant.</p>`;
 }
 function chg(i,d){pending[i].qty+=d;if(pending[i].qty<=0)pending.splice(i,1);renderPending()}
 $("manual").oninput=e=>{
-  const v=e.target.value.trim().toLowerCase();
-  $("manRes").innerHTML=v?Object.values(products).filter(p=>p.name.toLowerCase().includes(v)).slice(0,5).map(p=>`<button class="s" style="width:100%;text-align:left;margin-top:6px" onclick="addPending('${p.id}');$('manual').value='';$('manRes').innerHTML=''">${esc(p.name)} <span class="mut">(${tot(p)})</span></button>`).join(""):"";
+  $("manRes").innerHTML=findP(e.target.value,8).map(p=>`<button class="s res" onclick="addPending('${p.id}');$('manual').value='';$('manRes').innerHTML=''"><b>${esc(p.name)}</b><span class="mut">${tot(p)} en stock</span></button>`).join("")||(e.target.value.trim()?`<p class="mut">Aucun vin trouvé.</p>`:"");
 };
 $("validate").onclick=async()=>{
   if(!pending.length||!col)return;
@@ -186,28 +235,29 @@ function fmtL(p,k){const q=+p.stock?.[k]||0;if(k!=="reserve")return q;const n=+p
 function setLoc(k){locF=k;renderChips();$("addEx").classList.toggle("hide",k==="all");if(k!=="all")$("exLbl").textContent="Ajouter "+(k==="reserve"?"1 carton":"1 bouteille")+" en "+LN[k]+" (produit existant)";renderList()}
 function renderChips(){$("chips").innerHTML=[["all","Tout"],...LOCS].map(([k,n])=>`<button class="${k===locF?"on":""}" onclick="setLoc('${k}')">${n}</button>`).join("")}
 async function adj(id,d){const p=products[id];if(!p||!col)return;const s={...p.stock};const st=locF==="reserve"?(+p.perCarton||6):1;s[locF]=Math.max(0,(+s[locF]||0)+d*st);try{await col.doc(id).update({stock:s})}catch(e){toast("Erreur")}}
-$("ex").oninput=e=>{const v=e.target.value.trim().toLowerCase();$("exRes").innerHTML=v?Object.values(products).filter(p=>p.name.toLowerCase().includes(v)).slice(0,5).map(p=>`<button class="s" style="width:100%;text-align:left;margin-top:6px" onclick="adj('${p.id}',1);toast('+1 en '+LN[locF])">${esc(p.name)} <span class="mut">(${LN[locF]} : ${+p.stock?.[locF]||0})</span></button>`).join(""):""};
+$("ex").oninput=e=>{$("exRes").innerHTML=findP(e.target.value,8).map(p=>`<button class="s res" onclick="adj('${p.id}',1);toast('+1 en '+LN[locF])"><b>${esc(p.name)}</b><span class="mut">${LN[locF]} : ${+p.stock?.[locF]||0}</span></button>`).join("")};
 function renderList(){
-  const v=$("q").value.trim().toLowerCase();
-  const arr=Object.values(products).filter(p=>(!v||p.name.toLowerCase().includes(v)||(p.ean||"").includes(v))&&(locF==="all"||(+p.stock?.[locF]||0)>0)).sort((a,b)=>a.name.localeCompare(b.name));
+  const v=$("q").value.trim();
+  const base=v?findP(v,999):Object.values(products).sort((a,b)=>a.name.localeCompare(b.name));
+  const arr=base.filter(p=>locF==="all"||(+p.stock?.[locF]||0)>0);
   $("list").innerHTML=arr.length?arr.map(p=>{const t=tot(p);
     const tg=t===0?'<span class="tag b">rupture</span>':t<=(+p.threshold||0)?'<span class="tag w">stock bas</span>':"";
-    return `<div class="card" onclick="openForm('${p.id}')"><b>${esc(p.name)}</b>${tg}<div class="mut">Total : ${t}${p.price?` · ${esc(p.price)} €`:""}${p.ordered?` · 📦 ${esc(p.ordered)}`:""}</div>
-    ${locF==="all"?`<div class="loc">${LOCS.map(([k,n])=>`<span>${n} : ${fmtL(p,k)}</span>`).join("")}</div>`:`<div class="row" style="margin-top:8px"><span style="flex:2">${LN[locF]} : <b>${fmtL(p,locF)}</b></span><button class="s q" onclick="event.stopPropagation();adj('${p.id}',-1)">−</button><button class="s q" onclick="event.stopPropagation();adj('${p.id}',1)">+</button></div>`}</div>`}).join(""):`<p class="mut">Aucun produit${v?" trouvé":" pour l’instant"}.</p>`;
+    return `<div class="card" onclick="openForm('${p.id}')"><span class="name">${esc(p.name)}</span>${tg}<div class="mut">Total : ${t} bouteille${t>1?"s":""}${p.price?` · ${esc(p.price)} €`:""}${p.ordered?` · 📦 ${esc(p.ordered)}`:""}</div>
+    ${locF==="all"?`<div class="loc">${LOCS.map(([k,n])=>`<span>${n} : ${fmtL(p,k)}</span>`).join("")}</div>`:`<div class="row" style="margin-top:10px"><span style="flex:2;font-size:18px">${LN[locF]} : <b>${fmtL(p,locF)}</b></span><button class="s q" onclick="event.stopPropagation();adj('${p.id}',-1)">−</button><button class="s q" onclick="event.stopPropagation();adj('${p.id}',1)">+</button></div>`}</div>`}).join(""):`<p class="mut" style="text-align:center;margin:24px 0">Aucun produit${v?" trouvé":" pour l’instant"}.</p>`;
 }
 $("q").oninput=renderList;
 $("addBtn").onclick=()=>openForm(locF==="all"?{}:{stock:{[locF]:1}});
 function openForm(x){
   const p=typeof x==="string"?products[x]:x;editing=p.id||null;
   const f=$("form");f.classList.remove("hide");
-  f.innerHTML=`<label style="margin-top:0">Nom</label><input id="f_name" value="${esc(p.name)}">
+  f.innerHTML=`<h2>${editing?"Modifier le produit":"Nouveau produit"}</h2><label style="margin-top:0">Nom</label><input id="f_name" value="${esc(p.name)}">
   <label>Code-barres (EAN)</label><input id="f_ean" inputmode="numeric" value="${esc(p.ean)}">
   <div class="row"><div><label>Prix (€)</label><input id="f_price" inputmode="decimal" value="${esc(p.price)}"></div>
   <div><label>Alerte à partir de</label><input id="f_thr" inputmode="numeric" value="${p.threshold??3}"></div></div>
   <div class="row">${LOCS.map(([k,n])=>`<div><label>${n} (bouteilles)</label><input id="f_${k}" inputmode="numeric" value="${+p.stock?.[k]||0}"></div>`).join("")}</div>
   <label>Bouteilles par carton</label><input id="f_pc" inputmode="numeric" value="${+p.perCarton||6}"><label>Commande en cours (ex. « 12 bouteilles, jeudi »)</label><input id="f_ord" value="${esc(p.ordered)}">
-  <div class="row" style="margin-top:12px"><button class="p" onclick="saveForm()">Enregistrer</button><button class="s" onclick="$('form').classList.add('hide')">Annuler</button>
-  ${editing?`<button class="s" style="color:var(--bad)" onclick="delProd()">Supprimer</button>`:""}</div>`;
+  <div class="row" style="margin-top:16px"><button class="p" onclick="saveForm()">Enregistrer</button><button class="s" onclick="$('form').classList.add('hide')">Annuler</button></div>
+  ${editing?`<button class="s" style="width:100%;margin-top:10px;color:var(--bad)" onclick="delProd()">Supprimer ce produit</button>`:""}`;
   f.scrollIntoView({behavior:"smooth"});
 }
 async function saveForm(){
@@ -252,6 +302,7 @@ $("lg_btn").onclick=async()=>{
   const {error}=await sb.auth.signInWithPassword({email:$("lg_mail").value.trim(),password:$("lg_pw").value});
   if(error)$("lg_err").textContent="E-mail ou mot de passe incorrect.";else start();
 };
+$("lg_pw").onkeydown=e=>{if(e.key==="Enter")$("lg_btn").click()};
 $("logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 (async()=>{
   setMode("vente");renderPending();renderChips();renderList();
