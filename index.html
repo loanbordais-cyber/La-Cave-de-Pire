@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cave de Piré – Stock</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--bg:#faf7f5;--card:#fff;--tx:#2a1f22;--mut:#7a6a6e;--ac:#7b1e3a;--acx:#fff;--bd:#e7dfdc;--warn:#b45309;--warnbg:#fef3c7;--bad:#b91c1c;--badbg:#fee2e2;--ok:#166534;
@@ -38,15 +39,20 @@ button.q{width:34px;flex:none;padding:6px}
 .tag.w{background:var(--warnbg);color:var(--warn)}.tag.b{background:var(--badbg);color:var(--bad)}
 .mut{color:var(--mut);font-size:13px}
 .hide{display:none}
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}.login .card{width:100%;max-width:340px}
 #msg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
 #msg.on{opacity:1}
 </style>
 </head>
 <body>
+<div id="login" class="login hide"><div class="card"><h1>🍷 Cave de Piré</h1>
+<label style="margin-top:0">E-mail</label><input id="lg_mail" type="email" autocomplete="username">
+<label>Mot de passe</label><input id="lg_pw" type="password" autocomplete="current-password">
+<button class="p" id="lg_btn" style="margin-top:14px">Se connecter</button><p id="lg_err" class="mut"></p></div></div>
 <main>
-<h1>🍷 Cave de Piré</h1>
+<div class="row" style="margin-bottom:6px"><h1 style="flex:3;margin:0">🍷 Cave de Piré</h1><button class="s" id="logout" style="flex:none;font-size:13px">Déconnexion</button></div>
 <div id="alert"></div>
-<div id="off" class="card hide">Connexion à la base indisponible. Ouvre la page depuis ton compte Claude pour que le stock soit partagé.</div>
+<div id="off" class="card hide">Connexion à la base impossible. Vérifie internet puis recharge la page.</div>
 
 <section id="v-vente">
   <div class="seg" id="modes">
@@ -104,13 +110,13 @@ $("t-vente").onclick=()=>tab("vente");$("t-stock").onclick=()=>tab("stock");
 
 /* Sélecteurs d'emplacement */
 const opts=LOCS.map(([k,n])=>`<option value="${k}">${n}</option>`).join("");
-$("selA").innerHTML=opts;$("selB").innerHTML=opts;$("selB").value="reserve";
+$("selA").innerHTML=opts;$("selB").innerHTML=opts;$("selB").value="reserve";$("selA").onchange=()=>renderPending();
 function setMode(m){mode=m;document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
 $("lblA").textContent=m==="vente"?"Retirer de":m==="reception"?"Ajouter dans":"De";
 $("boxB").classList.toggle("hide",m!=="transfert");
 if(m==="transfert"){$("selA").value="reserve";$("selB").value="cave"}else $("selA").value="cave";
 $("validate").textContent=m==="vente"?"Valider les ventes":m==="reception"?"Valider la réception":"Valider le transfert"}
-document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{setMode(b.dataset.m);renderPending()});
 
 /* Alertes */
 function renderAlert(){
@@ -148,7 +154,7 @@ function onCode(code){
 }
 function addPending(id){const it=pending.find(x=>x.id===id);it?it.qty++:pending.push({id,qty:1});renderPending()}
 function renderPending(){
-  $("pending").innerHTML=pending.length?`<div class="card">${pending.map((it,i)=>`<div class="row" style="margin:4px 0"><div style="flex:3">${esc(products[it.id]?.name)}</div>
+  $("pending").innerHTML=pending.length?`<div class="card">${pending.map((it,i)=>`<div class="row" style="margin:4px 0"><div style="flex:3">${esc(products[it.id]?.name)}${$("selA").value==="reserve"&&mode!=="vente"?` <span class="mut">· carton de ${+products[it.id]?.perCarton||6}</span>`:""}</div>
   <button class="s q" onclick="chg(${i},-1)">−</button><b style="flex:none;width:24px;text-align:center">${it.qty}</b><button class="s q" onclick="chg(${i},1)">+</button></div>`).join("")}</div>`:`<p class="mut">Aucun article scanné.</p>`;
 }
 function chg(i,d){pending[i].qty+=d;if(pending[i].qty<=0)pending.splice(i,1);renderPending()}
@@ -163,9 +169,10 @@ $("validate").onclick=async()=>{
   try{
     for(const it of pending){
       const p=products[it.id];if(!p)continue;const s={...p.stock};
-      if(mode!=="reception")s[a]=Math.max(0,(+s[a]||0)-it.qty);
-      if(mode==="reception")s[a]=(+s[a]||0)+it.qty;
-      if(mode==="transfert")s[b]=(+s[b]||0)+it.qty;
+      const m=(a==="reserve"&&mode!=="vente")?(+p.perCarton||6):1,q=it.qty*m;
+      if(mode!=="reception")s[a]=Math.max(0,(+s[a]||0)-q);
+      if(mode==="reception")s[a]=(+s[a]||0)+q;
+      if(mode==="transfert")s[b]=(+s[b]||0)+q;
       const upd={stock:s};if(mode==="reception")upd.ordered="";
       await col.doc(p.id).update(upd);
     }
@@ -175,9 +182,10 @@ $("validate").onclick=async()=>{
 
 /* Stock */
 let locF="all";
-function setLoc(k){locF=k;renderChips();$("addEx").classList.toggle("hide",k==="all");if(k!=="all")$("exLbl").textContent="Ajouter 1 bouteille en "+LN[k]+" (produit existant)";renderList()}
+function fmtL(p,k){const q=+p.stock?.[k]||0;if(k!=="reserve")return q;const n=+p.perCarton||6,c=Math.floor(q/n),r=q%n;return c+" carton"+(c>1?"s":"")+(r?" + "+r:"")+" ("+q+" bt)"}
+function setLoc(k){locF=k;renderChips();$("addEx").classList.toggle("hide",k==="all");if(k!=="all")$("exLbl").textContent="Ajouter "+(k==="reserve"?"1 carton":"1 bouteille")+" en "+LN[k]+" (produit existant)";renderList()}
 function renderChips(){$("chips").innerHTML=[["all","Tout"],...LOCS].map(([k,n])=>`<button class="${k===locF?"on":""}" onclick="setLoc('${k}')">${n}</button>`).join("")}
-async function adj(id,d){const p=products[id];if(!p||!col)return;const s={...p.stock};s[locF]=Math.max(0,(+s[locF]||0)+d);try{await col.doc(id).update({stock:s})}catch(e){toast("Erreur")}}
+async function adj(id,d){const p=products[id];if(!p||!col)return;const s={...p.stock};const st=locF==="reserve"?(+p.perCarton||6):1;s[locF]=Math.max(0,(+s[locF]||0)+d*st);try{await col.doc(id).update({stock:s})}catch(e){toast("Erreur")}}
 $("ex").oninput=e=>{const v=e.target.value.trim().toLowerCase();$("exRes").innerHTML=v?Object.values(products).filter(p=>p.name.toLowerCase().includes(v)).slice(0,5).map(p=>`<button class="s" style="width:100%;text-align:left;margin-top:6px" onclick="adj('${p.id}',1);toast('+1 en '+LN[locF])">${esc(p.name)} <span class="mut">(${LN[locF]} : ${+p.stock?.[locF]||0})</span></button>`).join(""):""};
 function renderList(){
   const v=$("q").value.trim().toLowerCase();
@@ -185,7 +193,7 @@ function renderList(){
   $("list").innerHTML=arr.length?arr.map(p=>{const t=tot(p);
     const tg=t===0?'<span class="tag b">rupture</span>':t<=(+p.threshold||0)?'<span class="tag w">stock bas</span>':"";
     return `<div class="card" onclick="openForm('${p.id}')"><b>${esc(p.name)}</b>${tg}<div class="mut">Total : ${t}${p.price?` · ${esc(p.price)} €`:""}${p.ordered?` · 📦 ${esc(p.ordered)}`:""}</div>
-    ${locF==="all"?`<div class="loc">${LOCS.map(([k,n])=>`<span>${n} : ${+p.stock?.[k]||0}</span>`).join("")}</div>`:`<div class="row" style="margin-top:8px"><span style="flex:2">${LN[locF]} : <b>${+p.stock?.[locF]||0}</b></span><button class="s q" onclick="event.stopPropagation();adj('${p.id}',-1)">−</button><button class="s q" onclick="event.stopPropagation();adj('${p.id}',1)">+</button></div>`}</div>`}).join(""):`<p class="mut">Aucun produit${v?" trouvé":" pour l’instant"}.</p>`;
+    ${locF==="all"?`<div class="loc">${LOCS.map(([k,n])=>`<span>${n} : ${fmtL(p,k)}</span>`).join("")}</div>`:`<div class="row" style="margin-top:8px"><span style="flex:2">${LN[locF]} : <b>${fmtL(p,locF)}</b></span><button class="s q" onclick="event.stopPropagation();adj('${p.id}',-1)">−</button><button class="s q" onclick="event.stopPropagation();adj('${p.id}',1)">+</button></div>`}</div>`}).join(""):`<p class="mut">Aucun produit${v?" trouvé":" pour l’instant"}.</p>`;
 }
 $("q").oninput=renderList;
 $("addBtn").onclick=()=>openForm(locF==="all"?{}:{stock:{[locF]:1}});
@@ -196,8 +204,8 @@ function openForm(x){
   <label>Code-barres (EAN)</label><input id="f_ean" inputmode="numeric" value="${esc(p.ean)}">
   <div class="row"><div><label>Prix (€)</label><input id="f_price" inputmode="decimal" value="${esc(p.price)}"></div>
   <div><label>Alerte à partir de</label><input id="f_thr" inputmode="numeric" value="${p.threshold??3}"></div></div>
-  <div class="row">${LOCS.map(([k,n])=>`<div><label>${n}</label><input id="f_${k}" inputmode="numeric" value="${+p.stock?.[k]||0}"></div>`).join("")}</div>
-  <label>Commande en cours (ex. « 12 bouteilles, jeudi »)</label><input id="f_ord" value="${esc(p.ordered)}">
+  <div class="row">${LOCS.map(([k,n])=>`<div><label>${n} (bouteilles)</label><input id="f_${k}" inputmode="numeric" value="${+p.stock?.[k]||0}"></div>`).join("")}</div>
+  <label>Bouteilles par carton</label><input id="f_pc" inputmode="numeric" value="${+p.perCarton||6}"><label>Commande en cours (ex. « 12 bouteilles, jeudi »)</label><input id="f_ord" value="${esc(p.ordered)}">
   <div class="row" style="margin-top:12px"><button class="p" onclick="saveForm()">Enregistrer</button><button class="s" onclick="$('form').classList.add('hide')">Annuler</button>
   ${editing?`<button class="s" style="color:var(--bad)" onclick="delProd()">Supprimer</button>`:""}</div>`;
   f.scrollIntoView({behavior:"smooth"});
@@ -206,7 +214,7 @@ async function saveForm(){
   const name=$("f_name").value.trim();if(!name){toast("Le nom est obligatoire");return}
   const ean=$("f_ean").value.trim();
   const stock={};LOCS.forEach(([k])=>stock[k]=Math.max(0,parseInt($("f_"+k).value)||0));
-  const data={name,ean,price:$("f_price").value.trim(),threshold:parseInt($("f_thr").value)||0,stock,ordered:$("f_ord").value.trim()};
+  const data={name,ean,price:$("f_price").value.trim(),threshold:parseInt($("f_thr").value)||0,perCarton:parseInt($("f_pc").value)||6,stock,ordered:$("f_ord").value.trim()};
   try{
     if(editing)await col.doc(editing).update(data);
     else{const r=col.doc();await r.set(data)}
@@ -215,14 +223,42 @@ async function saveForm(){
 }
 async function delProd(){if(editing&&confirm("Supprimer ce produit ?")){try{await col.doc(editing).delete();$("form").classList.add("hide")}catch(e){toast("Erreur")}}}
 
-/* Base de données partagée */
+/* Base de données Supabase */
+const SUPABASE_URL="https://adzxwevdqhlwjnhsncqg.supabase.co";
+const SUPABASE_KEY="sb_publishable_tAMiMt39pHSPwhL3EXyheA_e74UOrjp";
+let sb=null;
+async function load(){
+  const {data,error}=await sb.from("products").select("*");
+  if(error){$("off").classList.remove("hide");return}
+  $("off").classList.add("hide");products={};data.forEach(d=>{products[d.id]=d});
+  renderAlert();renderList();renderPending();
+}
+function makeCol(){
+  const T=()=>sb.from("products");
+  const ok=async r=>{if(r.error)throw r.error;await load()};
+  return{doc:id=>({
+    update:async d=>ok(await T().update(d).eq("id",id)),
+    delete:async()=>ok(await T().delete().eq("id",id)),
+    set:async d=>ok(await T().insert(d))
+  })};
+}
+async function start(){
+  $("login").classList.add("hide");
+  col=makeCol();await load();
+  sb.channel("products").on("postgres_changes",{event:"*",schema:"public",table:"products"},load).subscribe();
+}
+$("lg_btn").onclick=async()=>{
+  $("lg_err").textContent="";
+  const {error}=await sb.auth.signInWithPassword({email:$("lg_mail").value.trim(),password:$("lg_pw").value});
+  if(error)$("lg_err").textContent="E-mail ou mot de passe incorrect.";else start();
+};
+$("logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 (async()=>{
   setMode("vente");renderPending();renderChips();renderList();
   try{
-    const db=await claude.use("db");
-    if(!db){$("off").classList.remove("hide");return}
-    col=db.collection("products");
-    col.onSnapshot(s=>{products={};s.docs.forEach(d=>{products[d.id]={id:d.id,...d.data()}});renderAlert();renderList();renderPending()},()=>$("off").classList.remove("hide"));
+    sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {data}=await sb.auth.getSession();
+    if(data.session)start();else $("login").classList.remove("hide");
   }catch(e){$("off").classList.remove("hide")}
 })();
 </script>
