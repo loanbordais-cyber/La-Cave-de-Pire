@@ -3,22 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#5e1530">
+<meta name="theme-color" content="#262725">
 <title>Cave de Piré – Stock</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
-/* Couleurs : à remplacer par celles de la cave (--ac = couleur principale, --hd = bandeau du haut, --gold = détails) */
-:root{--bg:#f7f2ec;--card:#fff;--tx:#2b1d21;--mut:#7d6b70;--ac:#7b1e3a;--acx:#fff;--hd:#5e1530;--gold:#c9a45c;--bd:#e6dcd4;--chip:#f3ebe3;--warn:#9a4a05;--warnbg:#fdecc8;--bad:#b91c1c;--badbg:#fde2e2;--ok:#166534;--sh:0 2px 12px rgba(60,20,30,.09)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1315;--card:#281d20;--tx:#f5ecee;--mut:#b3a0a4;--ac:#e0708f;--acx:#1b1315;--hd:#3a0f1e;--gold:#d9b873;--bd:#3c2d31;--chip:#33262a;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.35)}}
-:root[data-theme="dark"]{--bg:#1b1315;--card:#281d20;--tx:#f5ecee;--mut:#b3a0a4;--ac:#e0708f;--acx:#1b1315;--hd:#3a0f1e;--gold:#d9b873;--bd:#3c2d31;--chip:#33262a;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.35)}
+/* Couleurs tirées du logo : anthracite, magenta, gris */
+:root{--bg:#f4f3f1;--card:#fff;--tx:#232422;--mut:#6f706c;--ac:#a31858;--acx:#fff;--hd:#262725;--gold:#d03a85;--bd:#dedcd7;--chip:#ecebe7;--warn:#9a4a05;--warnbg:#fdecc8;--bad:#b91c1c;--badbg:#fde2e2;--ok:#166534;--sh:0 2px 12px rgba(30,30,28,.10)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1d1b;--card:#292a28;--tx:#f1f0ed;--mut:#aaaba6;--ac:#e0559a;--acx:#1c1d1b;--hd:#1a1b19;--gold:#e0559a;--bd:#3b3c39;--chip:#343532;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#1c1d1b;--card:#292a28;--tx:#f1f0ed;--mut:#aaaba6;--ac:#e0559a;--acx:#1c1d1b;--hd:#1a1b19;--gold:#e0559a;--bd:#3b3c39;--chip:#343532;--warn:#fbbf24;--warnbg:#3a2c0b;--bad:#fca5a5;--badbg:#3f1515;--ok:#86efac;--sh:0 2px 12px rgba(0,0,0,.4)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--tx);font:18px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 .hdr{background:var(--hd);color:#fff;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 14px;border-bottom:3px solid var(--gold)}
 .hdr .in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:14px}
-.logo{height:52px;width:auto;max-width:130px;object-fit:contain;border-radius:8px}
+.logo{height:64px;width:64px;object-fit:cover;border-radius:12px;flex:none}
 .ttl{flex:1;min-width:0;line-height:1.15}
 .ttl b{display:block;font:700 24px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.3px}
+.ttl b em{font-style:normal;color:#b0b0b0}
 .ttl span{font-size:14px;opacity:.8}
 .hl{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px}
 main{max-width:720px;margin:0 auto;padding:18px 16px 120px}
@@ -60,7 +61,8 @@ button.q{width:50px;flex:none;padding:6px;font-size:24px;font-weight:700;line-he
 .hide{display:none!important}
 .login{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 .login .brand{text-align:center;margin-bottom:22px}
-.login .logo{height:96px;max-width:240px;margin-bottom:8px}
+.login .logo{height:210px;width:210px;border-radius:26px;box-shadow:var(--sh);margin-bottom:10px}
+.login .fb{display:none}.login .brand.nologo .fb{display:block}
 .login .brand b{display:block;font:700 32px/1.1 Georgia,"Times New Roman",serif;color:var(--ac)}
 .login .brand span{color:var(--mut);font-size:16px}
 .login .card{width:100%;max-width:380px}
@@ -71,7 +73,7 @@ button.q{width:50px;flex:none;padding:6px;font-size:24px;font-weight:700;line-he
 </head>
 <body>
 <div id="login" class="login hide">
-  <div class="brand"><img class="logo" src="logo.png" alt="" onerror="this.remove()"><b>Cave de Piré</b><span>Gestion du stock</span></div>
+  <div class="brand"><img class="logo" src="logo.png" alt="La Cave de Piré" onerror="this.remove();this.parentNode.classList.add('nologo')"><div class="fb"><b>Cave de Piré</b></div><span>Gestion du stock</span></div>
   <div class="card">
     <label style="margin-top:0">E-mail</label><input id="lg_mail" type="email" autocomplete="username" autocapitalize="none">
     <label>Mot de passe</label><input id="lg_pw" type="password" autocomplete="current-password">
@@ -81,8 +83,8 @@ button.q{width:50px;flex:none;padding:6px;font-size:24px;font-weight:700;line-he
 </div>
 
 <header class="hdr"><div class="in">
-  <img class="logo" src="logo.png" alt="" onerror="this.remove()">
-  <div class="ttl"><b>Cave de Piré</b><span>Gestion du stock</span></div>
+  <img class="logo" src="logo-icon.png" alt="La Cave de Piré" onerror="this.remove()">
+  <div class="ttl"><b>La <em>CAVE</em> de Piré</b><span>Gestion du stock</span></div>
   <button class="hl" id="logout">Déconnexion</button>
 </div></header>
 
